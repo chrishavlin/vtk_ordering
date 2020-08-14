@@ -1,4 +1,5 @@
-import sympy 
+import sympy as sy 
+from .lagrage import LagrangPoly
 from .vtk_tools import init_vtk_cell
 import numpy as np 
 
@@ -21,7 +22,8 @@ class sf(object):
             meth = 'GetNumberOf'+nstr.capitalize()
             setattr(self,attr_name,getattr(self.cell,meth)())
             
-        self.node_order_hash=self._build_point_hash()         
+        self.node_order_hash = self._build_point_hash()
+        self.shape_functions = self._build_shape_funcs()
         
     def _build_point_hash(self):
         # returns a dict with keys-value pairs of vtk_node_number : ijk node number 
@@ -40,3 +42,18 @@ class sf(object):
                     
         return dict(zip(pts,node_nums))
                    
+    def _build_shape_funcs(self):
+        
+        shape_funcs = []
+        x=sy.symbols('x')
+        y=sy.symbols('y')
+        z=sy.symbols('z')
+        for z_i in range(3):
+            for y_i in range(3):
+                for x_i in range(3):
+                    LP1 = LagrangPoly(x,2,x_i,[-1,0,1])
+                    LP2 = LagrangPoly(y,2,y_i,[-1,0,1])
+                    LP3 = LagrangPoly(z,2,z_i,[-1,0,1])
+                    shape_funcs.append(sy.simplify(LP1 * LP2 * LP3))
+        return shape_funcs 
+        
