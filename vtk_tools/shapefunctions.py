@@ -44,7 +44,10 @@ class sf(object):
                 
         ijkvals = self._get_ijk_permuatations()
         for ijk in ijkvals:
-            pts.append(self.cell.PointIndexFromIJK(*ijk))
+            if hasattr(self.cell,'PointIndexFromIJK'):
+                pts.append(self.cell.PointIndexFromIJK(*ijk))
+            else:
+                pts.append(self._get_cell_id_from_ijk(*ijk))
         
         node_hash = dict(zip(pts,node_nums))
         if self.vtk_create_major_version < 9 and self.cell_type == 72:
@@ -95,3 +98,6 @@ class sf(object):
                 ig = ig.ravel(order='C')
                 jg = jg.ravel(order='C')
                 return np.column_stack((ig,jg,kg)).tolist()
+                
+    def _get_cell_id_from_ijk(self,i,j=None,k=None):        
+        raise NotImplementedError("Cell type does not hav an ijk mapping yet.")
