@@ -31,7 +31,7 @@ def init_vtk_cell(vtk_type):
     >>> type(new_cell)
     <class 'vtkmodules.vtkCommonDataModel.vtkLagrangeHexahedron'>
     
-    
+    The new instance call access all of the vtk methods associated with that cell. 
     """
     
     if isinstance(vtk_type,str):
