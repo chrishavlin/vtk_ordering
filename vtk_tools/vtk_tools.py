@@ -46,5 +46,21 @@ def init_vtk_cell(vtk_type):
     else:
         raise ValueError(f"vtk_type {vtk_type} is not a valid vtk type.")
     
+def require_vtk_min_version(version='9.0.1'):
+    Major = vtk.vtkVersion.GetVTKMajorVersion()
+    Minor = vtk.vtkVersion.GetVTKMinorVersion()
+    
+    if Major >= int(version.split('.')[0]):
+        if Minor >= int(version.split('.')[1]): 
+            return 
+            
+    vtkver = vtk.vtkVersion.GetVTKSourceVersion()    
+    raise ModuleNotFoundError((
+        f"vtk version >= 9.0.1 required, but you have {vtkver}."
+        " To upgrade to the latest vtk version, try 'pip install vtk --upgrade' ."
+        " If you did not use pip to install vtk initially, you will likely need to " 
+        " uninstall your existing vtk package first."
+    ))
+
 # https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html        
 # https://vtk.org/doc/nightly/html/vtkCellType_8h.html
