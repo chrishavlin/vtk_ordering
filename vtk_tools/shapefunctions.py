@@ -7,7 +7,7 @@ require_vtk_min_version()
 
 class sf(object):
     def __init__(self,vtk_type,element_order=1,vtk_version='9.0.1'):
-        self.cell = init_vtk_cell(vtk_type)
+        self.cell, self.cell_type = init_vtk_cell(vtk_type)        
         self.n_dims = self.cell.GetCellDimension()
         
         self.vtk_create_version=vtk_version
@@ -26,7 +26,7 @@ class sf(object):
             attr_name = 'n_'+nstr 
             meth = 'GetNumberOf'+nstr.capitalize()
             setattr(self,attr_name,getattr(self.cell,meth)())
-            
+
         self.node_order_hash = self._build_point_hash()
         self.shape_functions = self._build_shape_funcs()
         
@@ -34,16 +34,24 @@ class sf(object):
         # returns a dict with keys-value pairs of vtk_node_number : ijk node number 
         pts = []
         els = np.array(self.element_order) + 1 
-        node_nums = range(0,np.prod(els))        
-        
+        node_nums = range(0,np.prod(els))
+
         dim0,dim1,dim2 = self.element_order
         
-        for i in range(dim0+1):            
+        for i in range(dim0+1):
             for j in range(dim1+1):
                 for k in range(dim2+1):
                     pts.append(self.cell.PointIndexFromIJK(i,j,k))
-                    
-        return dict(zip(pts,node_nums))
+            
+        node_hash = dict(zip(pts,node_nums))
+        if self.vtk_create_major_version < 9 and self.cell_type == 72:
+            # see https://gitlab.kitware.com/vtk/vtk/-/commit/7a0b92864c96680b1f42ee84920df556fc6ebaa3
+            ids2swap = [ [18,19], [30,28], [29,31]]
+            for ids in  ids2swap:
+                if ids[0] in pts and ids[1] in pts: 
+                    node_hash[ids[0]], node_hash[ids[1]] = node_hash[ids[1]], node_hash[ids[0]]
+
+        return node_hash
                    
     def _build_shape_funcs(self):
         

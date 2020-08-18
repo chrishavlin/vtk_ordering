@@ -42,7 +42,7 @@ def init_vtk_cell(vtk_type):
         
     if isinstance(vtk_type,int) and vtk_type in vtk_cell_hash.keys():
         cell_info = vtk_cell_hash[vtk_type]
-        return getattr(vtk,cell_info['vtk_class'])()
+        return getattr(vtk,cell_info['vtk_class'])(), vtk_type
     else:
         raise ValueError(f"vtk_type {vtk_type} is not a valid vtk type.")
     
@@ -60,7 +60,7 @@ def require_vtk_min_version(version='9.0.1'):
         " To upgrade to the latest vtk version, try 'pip install vtk --upgrade' ."
         " If you did not use pip to install vtk initially, you will likely need to " 
         " uninstall your existing vtk package first."
-    ))
+    ))    
 
 # https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html        
 # https://vtk.org/doc/nightly/html/vtkCellType_8h.html
