@@ -28,7 +28,7 @@ class sf(object):
             setattr(self,attr_name,getattr(self.cell,meth)())
 
         self.node_order_hash = self._build_point_hash()
-        self.shape_functions = self._build_shape_funcs()
+        # self.shape_functions = self._build_shape_funcs()        
         
     def _build_point_hash(self):
         # returns a dict with keys-value pairs of vtk_node_number : ijk node number 
@@ -36,13 +36,16 @@ class sf(object):
         els = np.array(self.element_order) + 1 
         node_nums = range(0,np.prod(els))
 
-        dim0,dim1,dim2 = self.element_order
+        # dim0,dim1,dim2 = self.element_order                
+        # for i in range(dim0+1):
+        #     for j in range(dim1+1):
+        #         for k in range(dim2+1):
+        #             pts.append(self.cell.PointIndexFromIJK(i,j,k))
+                
+        ijkvals = self._get_ijk_permuatations()
+        for ijk in ijkvals:
+            pts.append(self.cell.PointIndexFromIJK(*ijk))
         
-        for i in range(dim0+1):
-            for j in range(dim1+1):
-                for k in range(dim2+1):
-                    pts.append(self.cell.PointIndexFromIJK(i,j,k))
-            
         node_hash = dict(zip(pts,node_nums))
         if self.vtk_create_major_version < 9 and self.cell_type == 72:
             # see https://gitlab.kitware.com/vtk/vtk/-/commit/7a0b92864c96680b1f42ee84920df556fc6ebaa3
@@ -70,3 +73,25 @@ class sf(object):
                     shape_funcs.append(sy.simplify(LP1 * LP2 * LP3))
         return shape_funcs 
         
+    def _get_ijk_permuatations(self):
+        # returns a list of ijk values for looping over element nodes in 1d, 2d, 3d.     
+        
+        if self.n_dims == 1: 
+            ivals = range(0,self.element_order[0]+1)
+            return [[ival] for ival in ivals]
+        elif self.n_dims > 1: 
+            ivals = range(self.element_order[0]+1)
+            jvals = range(self.element_order[1]+1)
+            
+            if self.n_dims == 2: 
+                ig,jg = np.meshgrid(ivals,jvals,indexing='ij')
+                ig = ig.ravel(order='C')
+                jg = jg.ravel(order='C')
+                return np.column_stack((ig,jg)).tolist()
+            else:
+                kvals = range(self.element_order[2]+1)
+                ig,jg,kg = np.meshgrid(ivals,jvals,kvals,indexing='ij')
+                kg = kg.ravel(order='C')            
+                ig = ig.ravel(order='C')
+                jg = jg.ravel(order='C')
+                return np.column_stack((ig,jg,kg)).tolist()
