@@ -168,6 +168,8 @@ class sf(object):
             yaml_dict[mesh_name] = formatter.get_dict()
                         
         with open(file,write_mode) as yaml_stream:
+            if write_mode == 'a':
+                yaml_stream.write("\n")
             yaml.dump(yaml_dict,yaml_stream)    
     
 class sf_formatter(dict):
